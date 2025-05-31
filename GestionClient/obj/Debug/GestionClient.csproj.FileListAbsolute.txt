@@ -1,0 +1,17 @@
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\GestionClient.exe.config
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\GestionClient.exe
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\GestionClient.pdb
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\MetroFramework.dll
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\MetroFramework.Fonts.dll
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.csproj.AssemblyReference.cache
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.InformationClient.resources
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.Properties.Resources.resources
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.csproj.GenerateResource.cache
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.csproj.CoreCompileInputs.cache
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionC.EDA913CD.Up2Date
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.exe
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\obj\Debug\GestionClient.pdb
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\Database.mdf
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\Database_log.ldf
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\Client.dll
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClient\bin\Debug\Client.pdb

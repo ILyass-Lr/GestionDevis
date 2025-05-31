@@ -1,0 +1,6 @@
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\bin\Debug\Client.dll
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\bin\Debug\Client.pdb
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\obj\Debug\Client.csproj.AssemblyReference.cache
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\obj\Debug\Client.csproj.CoreCompileInputs.cache
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\obj\Debug\Client.dll
+C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\Client\obj\Debug\Client.pdb
