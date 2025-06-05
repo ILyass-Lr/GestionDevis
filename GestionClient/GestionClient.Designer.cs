@@ -65,7 +65,7 @@
             this.email_Label = new MetroFramework.Controls.MetroLabel();
             this.prenom_Label = new MetroFramework.Controls.MetroLabel();
             this.nom_Label = new MetroFramework.Controls.MetroLabel();
-            this.listView = new System.Windows.Forms.ListView();
+            this.ListView = new System.Windows.Forms.ListView();
             this.CliendId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.RaisonSociale = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.NumResponsable = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -81,6 +81,7 @@
             this.Ajouter_Tile = new MetroFramework.Controls.MetroTile();
             this.AjouterC_Tile = new MetroFramework.Controls.MetroTile();
             this.ModifierC_Tile = new MetroFramework.Controls.MetroTile();
+            this.error_Label = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -227,17 +228,18 @@
             this.RS_TextBox.Name = "RS_TextBox";
             this.RS_TextBox.Size = new System.Drawing.Size(137, 23);
             this.RS_TextBox.TabIndex = 4;
+            this.RS_TextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.RS_TextBox_KeyPress);
             // 
             // ClientID_TextBox
             // 
-            this.ClientID_TextBox.BackColor = System.Drawing.Color.White;
+            this.ClientID_TextBox.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientID_TextBox.CustomBackground = true;
+            this.ClientID_TextBox.Enabled = false;
             this.ClientID_TextBox.Location = new System.Drawing.Point(127, 16);
             this.ClientID_TextBox.Name = "ClientID_TextBox";
             this.ClientID_TextBox.Size = new System.Drawing.Size(137, 23);
             this.ClientID_TextBox.Style = MetroFramework.MetroColorStyle.White;
             this.ClientID_TextBox.TabIndex = 3;
-            this.ClientID_TextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ClientId_TextBox_KeyPress);
             // 
             // if_Label
             // 
@@ -501,9 +503,9 @@
             this.nom_Label.TabIndex = 0;
             this.nom_Label.Text = "Nom :";
             // 
-            // listView
+            // ListView
             // 
-            this.listView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.CliendId,
             this.RaisonSociale,
             this.NumResponsable,
@@ -512,15 +514,20 @@
             this.Fax,
             this.Email,
             this.Adress});
-            this.listView.FullRowSelect = true;
-            this.listView.HideSelection = false;
-            this.listView.Location = new System.Drawing.Point(23, 362);
-            this.listView.Name = "listView";
-            this.listView.Size = new System.Drawing.Size(775, 150);
-            this.listView.TabIndex = 2;
-            this.listView.UseCompatibleStateImageBehavior = false;
-            this.listView.View = System.Windows.Forms.View.Details;
-            this.listView.Click += new System.EventHandler(this.listView_Click);
+            this.ListView.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ListView.ForeColor = System.Drawing.SystemColors.InfoText;
+            this.ListView.FullRowSelect = true;
+            this.ListView.GridLines = true;
+            this.ListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.ListView.HideSelection = false;
+            this.ListView.Location = new System.Drawing.Point(23, 369);
+            this.ListView.Name = "ListView";
+            this.ListView.OwnerDraw = true;
+            this.ListView.Size = new System.Drawing.Size(775, 150);
+            this.ListView.TabIndex = 2;
+            this.ListView.UseCompatibleStateImageBehavior = false;
+            this.ListView.View = System.Windows.Forms.View.Details;
+            this.ListView.Click += new System.EventHandler(this.ListView_Click);
             // 
             // CliendId
             // 
@@ -535,12 +542,12 @@
             // NumResponsable
             // 
             this.NumResponsable.Text = "Num Responsablle";
-            this.NumResponsable.Width = 105;
+            this.NumResponsable.Width = 120;
             // 
             // Tel
             // 
             this.Tel.Text = "Tel";
-            this.Tel.Width = 95;
+            this.Tel.Width = 85;
             // 
             // Portable
             // 
@@ -550,7 +557,7 @@
             // Fax
             // 
             this.Fax.Text = "Fax";
-            this.Fax.Width = 95;
+            this.Fax.Width = 90;
             // 
             // Email
             // 
@@ -559,7 +566,7 @@
             // 
             // Adress
             // 
-            this.Adress.Text = "Adress";
+            this.Adress.Text = "Adresse";
             this.Adress.Width = 95;
             // 
             // recherche_Label
@@ -581,7 +588,7 @@
             this.Query_ComboBox.Items.AddRange(new object[] {
             "Client Id",
             "Raison Sociale",
-            "Num Responsable",
+            "Nom Responsable",
             "Tel",
             "Portable",
             "Fax",
@@ -618,6 +625,7 @@
             this.Exporter_Tile.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.Exporter_Tile.TileTextFontSize = MetroFramework.MetroTileTextSize.Small;
             this.Exporter_Tile.TileTextFontWeight = MetroFramework.MetroTileTextWeight.Bold;
+            this.Exporter_Tile.Click += new System.EventHandler(this.Exporter_Tile_Click);
             // 
             // Ajouter_Tile
             // 
@@ -663,11 +671,22 @@
             this.ModifierC_Tile.TileTextFontWeight = MetroFramework.MetroTileTextWeight.Bold;
             this.ModifierC_Tile.Click += new System.EventHandler(this.ModifierC_Tile_Click);
             // 
+            // error_Label
+            // 
+            this.error_Label.AutoSize = true;
+            this.error_Label.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.error_Label.ForeColor = System.Drawing.Color.Red;
+            this.error_Label.Location = new System.Drawing.Point(36, 347);
+            this.error_Label.Name = "error_Label";
+            this.error_Label.Size = new System.Drawing.Size(0, 16);
+            this.error_Label.TabIndex = 14;
+            // 
             // InformationClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(983, 590);
+            this.Controls.Add(this.error_Label);
             this.Controls.Add(this.ModifierC_Tile);
             this.Controls.Add(this.AjouterC_Tile);
             this.Controls.Add(this.Ajouter_Tile);
@@ -675,9 +694,10 @@
             this.Controls.Add(this.Query_TextBox);
             this.Controls.Add(this.Query_ComboBox);
             this.Controls.Add(this.recherche_Label);
-            this.Controls.Add(this.listView);
+            this.Controls.Add(this.ListView);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "InformationClient";
             this.Text = "Information Client";
             this.Load += new System.EventHandler(this.InformationClient_Load);
@@ -729,7 +749,7 @@
         private MetroFramework.Controls.MetroComboBox Ville_ComboBox;
         private MetroFramework.Controls.MetroTextBox Adress_TextBox;
         private MetroFramework.Controls.MetroLabel adress_Label;
-        private System.Windows.Forms.ListView listView;
+        private System.Windows.Forms.ListView ListView;
         private System.Windows.Forms.ColumnHeader CliendId;
         private System.Windows.Forms.ColumnHeader RaisonSociale;
         private System.Windows.Forms.ColumnHeader NumResponsable;
@@ -745,6 +765,7 @@
         private MetroFramework.Controls.MetroTile Ajouter_Tile;
         private MetroFramework.Controls.MetroTile AjouterC_Tile;
         private MetroFramework.Controls.MetroTile ModifierC_Tile;
+        private System.Windows.Forms.Label error_Label;
     }
 }
 

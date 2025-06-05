@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ProductDataSet" targetNamespace="http://tempuri.org/ProductDataSet.xsd" xmlns:mstns="http://tempuri.org/ProductDataSet.xsd" xmlns="http://tempuri.org/ProductDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="DatabaseConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="DatabaseConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.GestionClientFactures.Properties.Settings.GlobalReference.Default.DatabaseConnectionString" Provider="System.Data.SqlClient" />
+        </Connections>
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ProductDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="ProductDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ProductDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ProductData" msprop:Generator_RowClassName="ProductDataRow" msprop:Generator_RowEvHandlerName="ProductDataRowChangeEventHandler" msprop:Generator_RowDeletedName="ProductDataRowDeleted" msprop:Generator_RowDeletingName="ProductDataRowDeleting" msprop:Generator_RowEvArgName="ProductDataRowChangeEvent" msprop:Generator_TablePropName="ProductData" msprop:Generator_RowChangedName="ProductDataRowChanged" msprop:Generator_UserTableName="ProductData" msprop:Generator_RowChangingName="ProductDataRowChanging" msprop:Generator_TableClassName="ProductDataDataTable" msprop:Generator_TableVarName="tableProductData">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Reference" msprop:Generator_UserColumnName="Reference" msprop:Generator_ColumnPropNameInTable="ReferenceColumn" msprop:Generator_ColumnPropNameInRow="Reference" msprop:Generator_ColumnVarNameInTable="columnReference" type="xs:string" minOccurs="0" />
+              <xs:element name="Designation" msprop:Generator_UserColumnName="Designation" msprop:Generator_ColumnPropNameInTable="DesignationColumn" msprop:Generator_ColumnPropNameInRow="Designation" msprop:Generator_ColumnVarNameInTable="columnDesignation" type="xs:string" minOccurs="0" />
+              <xs:element name="Prix" msprop:Generator_UserColumnName="Prix" msprop:Generator_ColumnPropNameInTable="PrixColumn" msprop:Generator_ColumnPropNameInRow="Prix" msprop:Generator_ColumnVarNameInTable="columnPrix" type="xs:string" minOccurs="0" />
+              <xs:element name="Quantite" msprop:Generator_UserColumnName="Quantite" msprop:Generator_ColumnPropNameInTable="QuantiteColumn" msprop:Generator_ColumnPropNameInRow="Quantite" msprop:Generator_ColumnVarNameInTable="columnQuantite" type="xs:int" minOccurs="0" />
+              <xs:element name="Total" msprop:Generator_UserColumnName="Total" msprop:Generator_ColumnPropNameInTable="TotalColumn" msprop:Generator_ColumnPropNameInRow="Total" msprop:Generator_ColumnVarNameInTable="columnTotal" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

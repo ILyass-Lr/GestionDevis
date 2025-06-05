@@ -10,103 +10,153 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MetroFramework.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using ClosedXML.Excel;
 namespace GestionClient
 {
     public partial class InformationClient : MetroForm
     {
-        private SqlConnection connection;
-        private List<Client> clients = new List<Client>();
-        private Client selectedClient = null;
+        public event Action Synchronisation;
+        readonly private SqlConnection Conn;
+        readonly private ClientRepository ClientRepo;
+        private List<Client> Clients = new List<Client>();
+        private List<Client> FilteredClients = new List<Client>();
+        private Client SelectedClient = null;
+
+        // CONSTRUCTEUR ET INITIALISATION
         public InformationClient()
         {
             InitializeComponent();
             string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=""C:\Users\lenovo\Desktop\GI\S8\Dot Net Technologies\TP5-6\GestionClientFactures\Database.mdf"";Integrated Security=True";
-            connection = new SqlConnection(connectionString);
+            Conn = new SqlConnection(connectionString);
+            ClientRepo = new ClientRepository(Conn);
         }
 
         private void InformationClient_Load(object sender, EventArgs e)
         {
-            LoadClientsToListView();
+            // Événements pour le custom drawing
+            ListView.DrawColumnHeader += MyListView_DrawColumnHeader;
+            ListView.DrawItem += MyListView_DrawItem;
+            ListView.DrawSubItem += MyListView_DrawSubItem;
+            // Initialiser la ListView
+            LoadClients();
         }
 
+
+        /*
+        * Ces méthodes sont utilisées pour personnaliser l'apparence de la ListView.
+        * Elles permettent de dessiner les en-têtes de colonnes, les éléments et les sous-éléments.
+        */
+        private void MyListView_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void MyListView_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void MyListView_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            using (SolidBrush backBrush = new SolidBrush(Color.FromArgb(255, 0, 174, 219))) // Set your color here
+            using (SolidBrush textBrush = new SolidBrush(Color.White))
+            using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+            {
+                e.Graphics.FillRectangle(backBrush, e.Bounds);
+                e.Graphics.DrawString(e.Header.Text, ListView.Font, textBrush, e.Bounds, sf);
+            }
+        }
+
+
+        /*        
+         * Ces méthodes sont utilisées pour gérer les événements de saisie des TextBox.
+         * Elles permettent de valider les entrées de l'utilisateur en temps réel.
+         */
         private void ICE_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Only allow digits and backspace
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back && !char.IsControl(e.KeyChar))
             {
+                error_Label.Text = "L'ICE ne peut contenir que des chiffres.";
                 e.Handled = true;
                 return;
             }
 
             // Limit to 15 digits maximum
-            Control control = sender as Control;
-            if (control != null && char.IsDigit(e.KeyChar) && control.Text.Length >= 15)
+            if (sender is Control control && char.IsDigit(e.KeyChar) && control.Text.Length >= 15)
             {
+                error_Label.Text = "L'ICE ne peut pas dépasser 15 chiffres.";
                 e.Handled = true;
             }
         }
 
         private void RegistreC_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Only allow digits and backspace
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back && !char.IsControl(e.KeyChar))
             {
+                error_Label.Text = "Le Registre de Commerce ne peut contenir que des chiffres.";
                 e.Handled = true;
                 return;
             }
 
             // Limit to 5 digits maximum
-            Control control = sender as Control;
-            if (control != null && char.IsDigit(e.KeyChar) && control.Text.Length >= 5)
+            if (sender is Control control && char.IsDigit(e.KeyChar) && control.Text.Length >= 5)
             {
+                error_Label.Text = "Le Registre de Commerce ne peut pas dépasser 5 chiffres.";
                 e.Handled = true;
             }
         }
 
-        private void ClientId_TextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Only allow digits and backspace
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
-            {
-                e.Handled = true;
-            }
-        }
         private void IF_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Only allow digits and backspace
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back && !char.IsControl(e.KeyChar))
             {
+                error_Label.Text = "L'Identifiant Fiscal ne peut contenir que des chiffres.";
                 e.Handled = true;
                 return;
             }
 
             // Safely cast to get the text length
-            Control control = sender as Control;
-            if (control != null && char.IsDigit(e.KeyChar) && control.Text.Length >= 8)
+            if (sender is Control control && char.IsDigit(e.KeyChar) && control.Text.Length >= 8)
             {
+                error_Label.Text = "L'Identifiant Fiscal ne peut pas dépasser 8 chiffres.";
                 e.Handled = true;
             }
         }
+
         private void Patente_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             if (!char.IsLetterOrDigit(e.KeyChar) &&
                 e.KeyChar != (char)Keys.Back &&
                 e.KeyChar != ' ' &&
                 e.KeyChar != '-' &&
-                e.KeyChar != '_')
+                e.KeyChar != '_'
+                 && !char.IsControl(e.KeyChar)
+                )
             {
+                error_Label.Text = "La Patente ne peut contenir que des lettres, des chiffres, des espaces, des tirets et des underscores.";
                 e.Handled = true;
             }
         }
 
-
         private void Tel_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Allow digits, spaces, +, -, (, ), and backspace
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back &&
                 e.KeyChar != ' ' && e.KeyChar != '+' && e.KeyChar != '-' &&
-                e.KeyChar != '(' && e.KeyChar != ')')
+                e.KeyChar != '(' && e.KeyChar != ')'
+                 && !char.IsControl(e.KeyChar)
+                )
             {
+                error_Label.Text = "Le numéro de téléphone ne peut contenir que des chiffres, des espaces, des tirets, des parenthèses et le signe +.";
                 e.Handled = true;
             }
         }
@@ -125,19 +175,23 @@ namespace GestionClient
 
         private void Email_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Allow most characters for email, restrict some special characters
-            if (e.KeyChar == ' ' || e.KeyChar == '\t')
+            if (e.KeyChar == ' ' || e.KeyChar == '\t' && !char.IsControl(e.KeyChar))
             {
+                error_Label.Text = "L'email ne peut pas contenir d'espaces.";
                 e.Handled = true;
             }
         }
 
         private void Nom_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            error_Label.Text = "";
             // Allow letters, spaces, hyphens, apostrophes
             if (!char.IsLetter(e.KeyChar) && e.KeyChar != (char)Keys.Back &&
-                e.KeyChar != ' ' && e.KeyChar != '-' && e.KeyChar != '\'')
+                e.KeyChar != ' ' && e.KeyChar != '-' && e.KeyChar != '\'' && !char.IsControl(e.KeyChar))
             {
+                error_Label.Text = "Le nom ne peut contenir que des lettres, des espaces, des tirets et des apostrophes.";
                 e.Handled = true;
             }
         }
@@ -148,6 +202,21 @@ namespace GestionClient
             Nom_TextBox_KeyPress(sender, e);
         }
 
+        private void RS_TextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar) &&
+                e.KeyChar != '-' && e.KeyChar != '_' && e.KeyChar != '\'' && e.KeyChar != '.')
+            {
+                error_Label.Text = "La Raison Sociale ne peut contenir que des lettres, des espaces, des tirets, des underscores, des apostrophes et des points.";
+                e.Handled = true;
+            }
+        }
+
+
+        /*         
+         * Ces méthodes sont utilisées pour valider les champs spécifiques.
+         * Elles vérifient si les entrées respectent les formats requis.
+         */
         private bool ValidateICE(string ice)
         {
             // Check if exactly 15 digits
@@ -221,6 +290,8 @@ namespace GestionClient
             return cleanPhone.All(char.IsDigit) && cleanPhone.Length >= 8;
         }
 
+
+        // VAALIDATION DES CHAMPS OBLIGATOIRES
         private bool ValidateRequiredField(string value, string fieldName)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -231,6 +302,8 @@ namespace GestionClient
             return true;
         }
 
+
+        // VALIDATION DE TOUS LES CHAMPS
         private bool ValidateAllFields()
         {
             // Validate required fields (adjust based on your business rules)
@@ -293,71 +366,333 @@ namespace GestionClient
                 return false;
             }
 
+            if (!ValidatePatente(Patente_TextBox.Text))
+            {
+                MessageBox.Show("Le champ Patente est obligatoire.", "Champ requis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Patente_TextBox.Focus();
+                return false;
+            }
+
+
             return true;
         }
 
+
+        /*        
+         * Ces méthodes sont utilisées pour ajouter et modifier des clients.
+         * Elles vérifient d'abord si tous les champs sont valides avant de procéder à l'ajout ou à la modification.
+         * Après l'ajout ou la modification, elles mettent à jour la ListView (filtré ou non selon si le filtre est active ou non)
+         * et effacent les champs.
+         */
         private void AjouterC_Tile_Click(object sender, EventArgs e)
         {
             if (!ValidateAllFields()) return;
 
-            try
+            Client client = new Client(
+                (string.IsNullOrEmpty(ClientID_TextBox.Text)) ? -1 : int.Parse(ClientID_TextBox.Text),
+                NomR_TextBox.Text,
+                TypeS_TextBox.Text,
+                Nom_TextBox.Text,
+                Prenom_TextBox.Text,
+                Tel_TextBox.Text,
+                Portable_TextBox.Text,
+                Fax_TextBox.Text,
+                RS_TextBox.Text,
+                Email_TextBox.Text,
+                Adress_TextBox.Text,
+                Ville_ComboBox.Text,
+                Patente_TextBox.Text,
+                ICE_TextBox.Text,
+                RegistreC_TextBox.Text,
+                IF_TextBox.Text,
+                Pays_TextBox.Text
+             );
+            ClientRepo.InsertClient(client);
+
+            if (string.IsNullOrEmpty(Query_TextBox.Text))
             {
-                connection.Open();
-                SqlCommand cmd = connection.CreateCommand();
-                cmd.CommandType = CommandType.Text;
+                LoadClients();
+            }
+            else
+            {
+                LoadFilteredClients();
+            }
+            ClearAllFields();
+            ClientID_TextBox.Focus();
+            Synchronisation.Invoke();
+        }
 
-                // Note: ClientId is IDENTITY, so we don't insert it. It will be auto-generated.
-                cmd.CommandText = @"INSERT INTO [InfoClients] 
-                           (NomResp, TypeSociete, Nom, Prenom, Tel, Portable, Fax, RS, Email, Adresse, Ville, Patente, ICE, RC, [IF], Pays) 
-                           VALUES 
-                           (@nomResp, @typeSociete, @nom, @prenom, @tel, @portable, @fax, @rs, @email, @adresse, @ville, @patente, @ice, @rc, @if, @pays)";
 
-                // Add parameters
-                cmd.Parameters.AddWithValue("@nomResp", string.IsNullOrWhiteSpace(NomR_TextBox.Text) ? (object)DBNull.Value : NomR_TextBox.Text);
-                cmd.Parameters.AddWithValue("@typeSociete", string.IsNullOrWhiteSpace(TypeS_TextBox.Text) ? (object)DBNull.Value : TypeS_TextBox.Text);
-                cmd.Parameters.AddWithValue("@nom", string.IsNullOrWhiteSpace(Nom_TextBox.Text) ? (object)DBNull.Value : Nom_TextBox.Text);
-                cmd.Parameters.AddWithValue("@prenom", string.IsNullOrWhiteSpace(Prenom_TextBox.Text) ? (object)DBNull.Value : Prenom_TextBox.Text);
-                cmd.Parameters.AddWithValue("@tel", string.IsNullOrWhiteSpace(Tel_TextBox.Text) ? (object)DBNull.Value : Tel_TextBox.Text);
-                cmd.Parameters.AddWithValue("@portable", string.IsNullOrWhiteSpace(Portable_TextBox.Text) ? (object)DBNull.Value : Portable_TextBox.Text);
-                cmd.Parameters.AddWithValue("@fax", string.IsNullOrWhiteSpace(Fax_TextBox.Text) ? (object)DBNull.Value : Fax_TextBox.Text);
-                cmd.Parameters.AddWithValue("@rs", string.IsNullOrWhiteSpace(RS_TextBox.Text) ? (object)DBNull.Value : RS_TextBox.Text);
-                cmd.Parameters.AddWithValue("@email", string.IsNullOrWhiteSpace(Email_TextBox.Text) ? (object)DBNull.Value : Email_TextBox.Text);
-                cmd.Parameters.AddWithValue("@adresse", string.IsNullOrWhiteSpace(Adress_TextBox.Text) ? (object)DBNull.Value : Adress_TextBox.Text);
-                cmd.Parameters.AddWithValue("@ville", string.IsNullOrWhiteSpace(Ville_ComboBox.Text) ? (object)DBNull.Value : Ville_ComboBox.Text);
-                cmd.Parameters.AddWithValue("@patente", string.IsNullOrWhiteSpace(Patente_TextBox.Text) ? (object)DBNull.Value : Patente_TextBox.Text);
-                cmd.Parameters.AddWithValue("@pays", string.IsNullOrWhiteSpace(Pays_TextBox.Text) ? (object)DBNull.Value : Pays_TextBox.Text);
+        /*         
+         * Cette méthode est utilisée pour modifier un client sélectionné.
+         * Elle vérifie d'abord si un client est sélectionné, puis valide les champs avant de procéder à la modification.
+         * Après la modification, elle met à jour la ListView (filtré ou non selon si le filtre est active ou non)
+         * et efface les champs.
+         */
+        private void ModifierC_Tile_Click(object sender, EventArgs e)
+        {
+            // Check if a client is selected
+            if (SelectedClient == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un client à modifier.", "Aucun client sélectionné",
+                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+         
+            // Vérifier si le client existe en base
+            var existingClient = ClientRepo.GetClientById(SelectedClient.ClientId);
+            if (existingClient == null)
+            {
+                MessageBox.Show("Le client sélectionné n'existe pas en base de données!", "Erreur");
+                return;
+            }
 
-                // Convert numeric fields
-                cmd.Parameters.AddWithValue("@ice", string.IsNullOrWhiteSpace(ICE_TextBox.Text) ? (object)DBNull.Value : long.Parse(ICE_TextBox.Text));
-                cmd.Parameters.AddWithValue("@rc", string.IsNullOrWhiteSpace(RegistreC_TextBox.Text) ? (object)DBNull.Value : int.Parse(RegistreC_TextBox.Text));
-                cmd.Parameters.AddWithValue("@if", string.IsNullOrWhiteSpace(IF_TextBox.Text) ? (object)DBNull.Value : int.Parse(IF_TextBox.Text));
 
-                int rowsAffected = cmd.ExecuteNonQuery();
+            if (!ValidateAllFields()) return;
 
-                if (rowsAffected > 0)
+            // Créer le client avec les nouvelles données
+            Client updatedClient = new Client(
+                SelectedClient.ClientId,
+                NomR_TextBox.Text,
+                TypeS_TextBox.Text,
+                Nom_TextBox.Text,
+                Prenom_TextBox.Text,
+                Tel_TextBox.Text,
+                Portable_TextBox.Text,
+                Fax_TextBox.Text,
+                RS_TextBox.Text,
+                Email_TextBox.Text,
+                Adress_TextBox.Text,
+                Ville_ComboBox.Text,
+                Patente_TextBox.Text,
+                ICE_TextBox.Text,
+                RegistreC_TextBox.Text,
+                IF_TextBox.Text,
+                Pays_TextBox.Text
+            );
+
+            // Tenter la mise à jour
+            bool success = ClientRepo.UpdateClient(updatedClient);
+
+            if (success)
+            {
+                MessageBox.Show("Client mis à jour avec succès!", "Succès",
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                ClearAllFields();
+
+                if (string.IsNullOrEmpty(Query_TextBox.Text))
                 {
-                    MessageBox.Show("Client ajouté avec succès!", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    ClearAllFields();
-                    LoadClientsToListView(); // Refresh the ListView
+                    LoadClients();
                 }
                 else
                 {
-                    MessageBox.Show("Erreur lors de l'ajout du client.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    LoadFilteredClients();
                 }
             }
-            catch (SqlException sqlEx)
+            else
             {
-                MessageBox.Show($"Erreur de base de données: {sqlEx.Message}", "Erreur SQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Échec de la mise à jour du client.", "Erreur",
+                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            catch (Exception ex)
+        }
+
+        /*  
+         *  Mise à jour de la ListView
+         *  LoadClients() : appelle la table [InfoClients] de la BD pour afficher tous les clients   
+         *  LoadFilteredClients() : appelle la table [InfoClients] de la BD pour afficher les clients filtrés en fonction du champ sélectionné et de la requête saisie.
+         */
+        private void LoadClients()
+        {
+            ListView.Items.Clear();
+            Clients.Clear();
+            Clients = ClientRepo.GetAllClients();
+            foreach (Client client in Clients)
             {
-                MessageBox.Show($"Erreur inattendue: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ListViewItem item = new ListViewItem(client.ClientId.ToString());
+                item.SubItems.Add(client.RS);
+                item.SubItems.Add(client.NomResp);
+                item.SubItems.Add(client.Tel);
+                item.SubItems.Add(client.Portable);
+                item.SubItems.Add(client.Fax);
+                item.SubItems.Add(client.Email);
+                item.SubItems.Add(client.Adresse);
+
+                // Store the client index in the Tag property for easy retrieval
+                item.Tag = client;
+
+                ListView.Items.Add(item);
             }
-            finally
+            if (ListView.Items.Count > 0)
             {
-                if (connection.State == ConnectionState.Open)
-                    connection.Close();
+                ListView.Items[0].Selected = true; // Select the first item by default
             }
+            else
+            {
+                ClearSelection(); // Clear fields if no clients are found
+            }
+        }
+
+        private void LoadFilteredClients()
+        {
+            string selectedField = Query_ComboBox.SelectedItem.ToString();
+            string query = Query_TextBox.Text.Trim().ToLower();
+
+            switch (selectedField)
+            {
+                case "Client Id":
+                    FilteredClients = Clients.Where(c => c.ClientId.ToString().Contains(query)).ToList();
+                    break;
+                case "Raison Sociale":
+                    FilteredClients = Clients.Where(c => c.RS.ToLower().Contains(query)).ToList();
+                    break;
+                case "Nom Responsable":
+                    FilteredClients = Clients.Where(c => c.NomResp.ToLower().Contains(query)).ToList();
+                    break;
+                case "Tel":
+                    FilteredClients = Clients.Where(c => c.Tel.Contains(query)).ToList();
+                    break;
+                case "Portable":
+                    FilteredClients = Clients.Where(c => c.Portable.Contains(query)).ToList();
+                    break;
+                case "Fax":
+                    FilteredClients = Clients.Where(c => c.Fax.Contains(query)).ToList();
+                    break;
+                case "Email":
+                    FilteredClients = Clients.Where(c => c.Email.ToLower().Contains(query)).ToList();
+                    break;
+                case "Adress":
+                    FilteredClients = Clients.Where(c => c.Adresse.ToLower().Contains(query)).ToList();
+                    break;
+                case "ICE":
+                    FilteredClients = Clients.Where(c => c.ICE.Contains(query)).ToList();
+                    break;
+                case "IF":
+                    FilteredClients = Clients.Where(c => c.IF.Contains(query)).ToList();
+                    break;
+                case "RC":
+                    FilteredClients = Clients.Where(c => c.RC.Contains(query)).ToList();
+                    break;
+                case "Patente":
+                    FilteredClients = Clients.Where(c => c.Patente.ToLower().Contains(query)).ToList();
+                    break;
+                case "Ville":
+                    FilteredClients = Clients.Where(c => c.Ville.ToLower().Contains(query)).ToList();
+                    break;
+                case "Pays":
+                    FilteredClients = Clients.Where(c => c.Pays.ToLower().Contains(query)).ToList();
+                    break;
+                default:
+                    MessageBox.Show("Champ de recherche non valide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+            }
+
+            // Clear the ListView and repopulate it with filtered clients
+            ListView.Items.Clear();
+            foreach (Client client in FilteredClients)
+            {
+                ListViewItem item = new ListViewItem(client.ClientId.ToString());
+                item.SubItems.Add(client.RS);
+                item.SubItems.Add(client.NomResp);
+                item.SubItems.Add(client.Tel);
+                item.SubItems.Add(client.Portable);
+                item.SubItems.Add(client.Fax);
+                item.SubItems.Add(client.Email);
+                item.SubItems.Add(client.Adresse);
+                // Store the client index in the Tag property for easy retrieval
+                item.Tag = client;
+                ListView.Items.Add(item);
+            }
+
+        }
+
+
+        /* 
+         * Méthodes pour gérer le filtrage des clients
+         * Query_TextBox_TextChanged : déclenchée lorsque le texte de la zone de recherche change.
+         * Query_ComboBox_SelectedIndexChanged : déclenchée lorsque l'utilisateur change le champ de recherche sélectionné.
+         */
+        private void Query_TextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(Query_TextBox.Text))
+            {
+                LoadClients();
+                return;
+            }
+
+            if (Query_ComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Veuillez sélectionner un champ de recherche.", "Champ requis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            LoadFilteredClients();
+
+        }
+
+        private void Query_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Clear the search textbox when field selection changes
+            Query_TextBox.Clear();
+            LoadClients(); // Show all data
+        }
+
+
+        /*
+         * Méthodes pour gérer la sélection d'un client dans la ListView
+         * et son affichage dans les champs de saisie.
+         */
+        private void ListView_Click(object sender, EventArgs e)
+        {
+            ClientID_TextBox.ReadOnly = true;
+            ClientID_TextBox.Enabled = false;
+            if (ListView.SelectedItems.Count > 0)
+            {
+                ListViewItem selectedItem = ListView.SelectedItems[0];
+                SelectedClient = (Client)selectedItem.Tag; // Retrieve the client from the selected item
+
+
+                // Populate all fields with client data
+                PopulateFieldsWithClientData(SelectedClient);
+            }
+        }
+
+        private void PopulateFieldsWithClientData(Client client)
+        {
+            ClientID_TextBox.Text = client.ClientId.ToString();
+            NomR_TextBox.Text = client.NomResp;
+            TypeS_TextBox.Text = client.TypeSociete;
+            Nom_TextBox.Text = client.Nom;
+            Prenom_TextBox.Text = client.Prenom;
+            Tel_TextBox.Text = client.Tel;
+            Portable_TextBox.Text = client.Portable;
+            Fax_TextBox.Text = client.Fax;
+            RS_TextBox.Text = client.RS;
+            Email_TextBox.Text = client.Email;
+            Adress_TextBox.Text = client.Adresse;
+            Ville_ComboBox.Text = client.Ville;
+            Patente_TextBox.Text = client.Patente;
+            ICE_TextBox.Text = client.ICE;
+            RegistreC_TextBox.Text = client.RC;
+            IF_TextBox.Text = client.IF;
+            Pays_TextBox.Text = client.Pays;
+        }
+
+
+        /*
+         * Méthodes pour le nettoyage des champs et la désélection des clients.
+         */
+        private void Vider_Tile_Click(object sender, EventArgs e)
+        {
+            ClearAllFields();
+            ClientID_TextBox.ReadOnly = false;
+        }
+
+        private void ClearSelection()
+        {
+
+            ClearAllFields();
+            SelectedClient = null;
         }
 
         private void ClearAllFields()
@@ -382,343 +717,229 @@ namespace GestionClient
             Pays_TextBox.Clear();
         }
 
-        private void LoadClientsToListView()
+
+        /*
+         * Méthodes pour exporter les données des clients vers un fichier Excel.
+         * Le fichier Excel contient tous les données des clients et non seulement des données filtrées.
+         * Le fichier Excel inclut un sheet ayant des statistiques sur les clients
+         */
+        private void Exporter_Tile_Click(object sender, EventArgs e)
         {
             try
             {
-                listView.Items.Clear();
-                clients.Clear(); // Clear the existing list
+                // Récupérer la liste des clients
+                Clients = ClientRepo.GetAllClients(); // Remplacez par votre méthode
 
-                if (connection.State == ConnectionState.Closed)
-                    connection.Open();
-
-                // Load all client data to populate the Client objects
-                SqlCommand cmd = new SqlCommand(@"SELECT ClientId, NomResp, TypeSociete, Nom, Prenom, 
-                                                Tel, Portable, Fax, RS, Email, Adresse, Ville, 
-                                                Patente, ICE, RC, [IF], Pays 
-                                         FROM InfoClients", connection);
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                if (Clients == null || Clients.Count == 0)
                 {
-                    // Create Client object with all data
-                    Client client = new Client(
-                        Convert.ToInt32(reader["ClientId"]),
-                        reader["NomResp"]?.ToString(),
-                        reader["TypeSociete"]?.ToString(),
-                        reader["Nom"]?.ToString(),
-                        reader["Prenom"]?.ToString(),
-                        reader["Tel"]?.ToString(),
-                        reader["Portable"]?.ToString(),
-                        reader["Fax"]?.ToString(),
-                        reader["RS"]?.ToString(),
-                        reader["Email"]?.ToString(),
-                        reader["Adresse"]?.ToString(),
-                        reader["Ville"]?.ToString(),
-                        reader["Patente"]?.ToString(),
-                        reader["ICE"]?.ToString(),
-                        reader["RC"]?.ToString(),
-                        reader["IF"]?.ToString(),
-                        reader["Pays"]?.ToString()
-                    );
-
-                    // Add client to the list
-                    clients.Add(client);
-
-                    // Create ListView item (display only selected fields)
-                    ListViewItem item = new ListViewItem(client.ClientId.ToString());
-                    item.SubItems.Add(client.RS);
-                    item.SubItems.Add(client.NomResp);
-                    item.SubItems.Add(client.Tel);
-                    item.SubItems.Add(client.Portable);
-                    item.SubItems.Add(client.Fax);
-                    item.SubItems.Add(client.Email);
-                    item.SubItems.Add(client.Adresse);
-
-                    // Store the client index in the Tag property for easy retrieval
-                    item.Tag = clients.Count - 1;
-
-                    listView.Items.Add(item);
-                }
-
-                reader.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur lors du chargement des clients: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open)
-                    connection.Close();
-            }
-        }
-        private void Query_TextBox_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                // If search box is empty, display all data
-                if (string.IsNullOrWhiteSpace(Query_TextBox.Text))
-                {
-                    LoadClientsToListView();
+                    MessageBox.Show("Aucun client à exporter.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                // Check if a search field is selected
-                if (Query_ComboBox.SelectedItem == null)
-                {
-                    MessageBox.Show("Veuillez sélectionner un champ de recherche.", "Champ requis", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // Get the selected field
-                string selectedField = Query_ComboBox.SelectedItem.ToString();
-                string query = "%" + Query_TextBox.Text.Trim() + "%";
-                string sql = "";
-
-                // Determine the SQL query based on selected field
-                switch (selectedField)
-                {
-                    case "Client Id":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE ClientId LIKE @query";
-                        break;
-                    case "Raison Sociale":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE RS LIKE @query";
-                        break;
-                    case "Num Responsable":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE NomResp LIKE @query";
-                        break;
-                    case "Tel":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Tel LIKE @query";
-                        break;
-                    case "Portable":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Portable LIKE @query";
-                        break;
-                    case "Fax":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Fax LIKE @query";
-                        break;
-                    case "Email":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Email LIKE @query";
-                        break;
-                    case "Adress":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Adresse LIKE @query";
-                        break;
-                    case "ICE":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE ICE LIKE @query";
-                        break;
-                    case "IF":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE [IF] LIKE @query";
-                        break;
-                    case "RC":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE RC LIKE @query";
-                        break;
-                    case "Patente":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Patente LIKE @query";
-                        break;
-                    case "Ville":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Ville LIKE @query";
-                        break;
-                    case "Pays":
-                        sql = "SELECT ClientId, RS, NomResp, Tel, Portable, Fax, Email, Adresse FROM InfoClients WHERE Pays LIKE @query";
-                        break;
-                    default:
-                        MessageBox.Show("Champ de recherche non valide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                }
-                // Execute the search query and populate ListView
-                SearchAndPopulateListView(sql, query);
+                // Exporter avec ClosedXML
+                ExportClientsDetailedToExcel();
             }
             catch (Exception ex)
             {
-                if (connection.State == ConnectionState.Open)
-                    connection.Close();
-
-                MessageBox.Show($"Erreur lors de la recherche: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur lors de l'exportation : {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void SearchAndPopulateListView(string sql, string query)
+        private void ExportClientsDetailedToExcel()
         {
-            try
+            using (var workbook = new XLWorkbook())
             {
-                listView.Items.Clear();
-                connection.Open();
+                // Feuille principale avec les clients
+                var clientsSheet = workbook.Worksheets.Add("Liste des Clients");
+                CreateClientsSheet(clientsSheet);
 
-                SqlCommand cmd = new SqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@query", query);
-                SqlDataReader reader = cmd.ExecuteReader();
+                // Feuille avec les statistiques
+                var statsSheet = workbook.Worksheets.Add("Statistiques");
+                CreateStatsSheet(statsSheet);
 
-                while (reader.Read())
+                // Sauvegarder
+                SaveFileDialog saveDialog = new SaveFileDialog
                 {
-                    ListViewItem item = new ListViewItem(reader["ClientId"].ToString());
-                    item.SubItems.Add(reader["RS"].ToString());
-                    item.SubItems.Add(reader["NomResp"].ToString());
-                    item.SubItems.Add(reader["Tel"].ToString());
-                    item.SubItems.Add(reader["Portable"].ToString());
-                    item.SubItems.Add(reader["Fax"].ToString());
-                    item.SubItems.Add(reader["Email"].ToString());
-                    item.SubItems.Add(reader["Adresse"].ToString());
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Sauvegarder le rapport complet des clients",
+                    FileName = $"Rapport_Clients_Complet_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
 
-                    listView.Items.Add(item);
-                }
-
-                reader.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur lors de la recherche: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (connection.State == ConnectionState.Open)
-                    connection.Close();
-            }
-        }
-
-        private void Query_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Clear the search textbox when field selection changes
-            Query_TextBox.Clear();
-            LoadClientsToListView(); // Show all data
-        }
-
-        private void ModifierC_Tile_Click(object sender, EventArgs e)
-        {
-            // Check if a client is selected
-            if (selectedClient == null)
-            {
-                MessageBox.Show("Veuillez sélectionner un client à modifier.", "Aucun client sélectionné",
-                               MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (!ValidateAllFields()) return;
-
-            try
-            {
-                connection.Open();
-                SqlCommand cmd = connection.CreateCommand();
-                cmd.CommandType = CommandType.Text;
-
-                cmd.CommandText = @"UPDATE [InfoClients] SET 
-                           NomResp = @nomResp, 
-                           TypeSociete = @typeSociete, 
-                           Nom = @nom, 
-                           Prenom = @prenom, 
-                           Tel = @tel, 
-                           Portable = @portable, 
-                           Fax = @fax, 
-                           RS = @rs, 
-                           Email = @email, 
-                           Adresse = @adresse, 
-                           Ville = @ville, 
-                           Patente = @patente, 
-                           ICE = @ice, 
-                           RC = @rc, 
-                           [IF] = @if, 
-                           Pays = @pays 
-                           WHERE ClientId = @clientId";
-
-                // Add parameters for all fields
-                cmd.Parameters.AddWithValue("@nomResp", string.IsNullOrWhiteSpace(NomR_TextBox.Text) ? (object)DBNull.Value : NomR_TextBox.Text);
-                cmd.Parameters.AddWithValue("@typeSociete", string.IsNullOrWhiteSpace(TypeS_TextBox.Text) ? (object)DBNull.Value : TypeS_TextBox.Text);
-                cmd.Parameters.AddWithValue("@nom", string.IsNullOrWhiteSpace(Nom_TextBox.Text) ? (object)DBNull.Value : Nom_TextBox.Text);
-                cmd.Parameters.AddWithValue("@prenom", string.IsNullOrWhiteSpace(Prenom_TextBox.Text) ? (object)DBNull.Value : Prenom_TextBox.Text);
-                cmd.Parameters.AddWithValue("@tel", string.IsNullOrWhiteSpace(Tel_TextBox.Text) ? (object)DBNull.Value : Tel_TextBox.Text);
-                cmd.Parameters.AddWithValue("@portable", string.IsNullOrWhiteSpace(Portable_TextBox.Text) ? (object)DBNull.Value : Portable_TextBox.Text);
-                cmd.Parameters.AddWithValue("@fax", string.IsNullOrWhiteSpace(Fax_TextBox.Text) ? (object)DBNull.Value : Fax_TextBox.Text);
-                cmd.Parameters.AddWithValue("@rs", string.IsNullOrWhiteSpace(RS_TextBox.Text) ? (object)DBNull.Value : RS_TextBox.Text);
-                cmd.Parameters.AddWithValue("@email", string.IsNullOrWhiteSpace(Email_TextBox.Text) ? (object)DBNull.Value : Email_TextBox.Text);
-                cmd.Parameters.AddWithValue("@adresse", string.IsNullOrWhiteSpace(Adress_TextBox.Text) ? (object)DBNull.Value : Adress_TextBox.Text);
-                cmd.Parameters.AddWithValue("@ville", string.IsNullOrWhiteSpace(Ville_ComboBox.Text) ? (object)DBNull.Value : Ville_ComboBox.Text);
-                cmd.Parameters.AddWithValue("@patente", string.IsNullOrWhiteSpace(Patente_TextBox.Text) ? (object)DBNull.Value : Patente_TextBox.Text);
-                cmd.Parameters.AddWithValue("@pays", string.IsNullOrWhiteSpace(Pays_TextBox.Text) ? (object)DBNull.Value : Pays_TextBox.Text);
-                cmd.Parameters.AddWithValue("@ice", string.IsNullOrWhiteSpace(ICE_TextBox.Text) ? (object)DBNull.Value : ICE_TextBox.Text);
-                cmd.Parameters.AddWithValue("@rc", string.IsNullOrWhiteSpace(RegistreC_TextBox.Text) ? (object)DBNull.Value : RegistreC_TextBox.Text);
-                cmd.Parameters.AddWithValue("@if", string.IsNullOrWhiteSpace(IF_TextBox.Text) ? (object)DBNull.Value : IF_TextBox.Text);
-
-                // The WHERE clause parameter
-                cmd.Parameters.AddWithValue("@clientId", selectedClient.ClientId);
-
-                int rowsAffected = cmd.ExecuteNonQuery();
-
-                if (rowsAffected > 0)
+                if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
-                    MessageBox.Show("Client modifié avec succès!", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    ClearAllFields();
-                    LoadClientsToListView(); // Refresh the ListView and client list
-                    selectedClient = null; // Reset selection
-                }
-                else
-                {
-                    MessageBox.Show("Aucun client n'a été modifié. Vérifiez que le client existe encore.", "Attention",
-                                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    workbook.SaveAs(saveDialog.FileName);
+                    MessageBox.Show($"Export détaillé réussi ! {Clients.Count} clients exportés avec statistiques.",
+                                  "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    System.Diagnostics.Process.Start(saveDialog.FileName);
                 }
             }
-            catch (SqlException sqlEx)
+        }
+
+        private void CreateClientsSheet(IXLWorksheet worksheet)
+        {
+            // Titre
+            worksheet.Cell(1, 1).Value = "LISTE DES CLIENTS";
+            worksheet.Range("A1:Q1").Merge().Style.Font.Bold = true;
+            worksheet.Range("A1:Q1").Style.Font.SetFontSize(16);
+            worksheet.Range("A1:Q1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Range("A1:Q1").Style.Fill.BackgroundColor = XLColor.DarkBlue;
+            worksheet.Range("A1:Q1").Style.Font.FontColor = XLColor.White;
+
+            // Date d'export
+            worksheet.Cell(2, 1).Value = $"Exporté le : {DateTime.Now:dd/MM/yyyy à HH:mm}";
+            worksheet.Cell(3, 1).Value = $"Nombre total de clients : {Clients.Count}";
+
+            // En-têtes (ligne 5)
+            int headerRow = 5;
+            worksheet.Cell(headerRow, 1).Value = "ID";
+            worksheet.Cell(headerRow, 2).Value = "Nom Responsable";
+            worksheet.Cell(headerRow, 3).Value = "Type Société";
+            worksheet.Cell(headerRow, 4).Value = "Nom";
+            worksheet.Cell(headerRow, 5).Value = "Prénom";
+            worksheet.Cell(headerRow, 6).Value = "Téléphone";
+            worksheet.Cell(headerRow, 7).Value = "Portable";
+            worksheet.Cell(headerRow, 8).Value = "Fax";
+            worksheet.Cell(headerRow, 9).Value = "Raison Sociale";
+            worksheet.Cell(headerRow, 10).Value = "Email";
+            worksheet.Cell(headerRow, 11).Value = "Adresse";
+            worksheet.Cell(headerRow, 12).Value = "Ville";
+            worksheet.Cell(headerRow, 13).Value = "Patente";
+            worksheet.Cell(headerRow, 14).Value = "ICE";
+            worksheet.Cell(headerRow, 15).Value = "RC";
+            worksheet.Cell(headerRow, 16).Value = "IF";
+            worksheet.Cell(headerRow, 17).Value = "Pays";
+
+            // Style des en-têtes
+            var headerRange = worksheet.Range($"A{headerRow}:Q{headerRow}");
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            // Données des clients
+            for (int i = 0; i < Clients.Count; i++)
             {
-                MessageBox.Show($"Erreur de base de données: {sqlEx.Message}", "Erreur SQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var client = Clients[i];
+                int row = headerRow + 1 + i;
+
+                worksheet.Cell(row, 1).Value = client.ClientId;
+                worksheet.Cell(row, 2).Value = client.NomResp ?? "";
+                worksheet.Cell(row, 3).Value = client.TypeSociete ?? "";
+                worksheet.Cell(row, 4).Value = client.Nom ?? "";
+                worksheet.Cell(row, 5).Value = client.Prenom ?? "";
+                worksheet.Cell(row, 6).Value = client.Tel ?? "";
+                worksheet.Cell(row, 7).Value = client.Portable ?? "";
+                worksheet.Cell(row, 8).Value = client.Fax ?? "";
+                worksheet.Cell(row, 9).Value = client.RS ?? "";
+                worksheet.Cell(row, 10).Value = client.Email ?? "";
+                worksheet.Cell(row, 11).Value = client.Adresse ?? "";
+                worksheet.Cell(row, 12).Value = client.Ville ?? "";
+                worksheet.Cell(row, 13).Value = client.Patente ?? "";
+                worksheet.Cell(row, 14).Value = client.ICE ?? "";
+                worksheet.Cell(row, 15).Value = client.RC ?? "";
+                worksheet.Cell(row, 16).Value = client.IF ?? "";
+                worksheet.Cell(row, 17).Value = client.Pays ?? "";
             }
-            catch (Exception ex)
+
+            // Ajuster les colonnes et ajouter des bordures
+            worksheet.ColumnsUsed().AdjustToContents();
+            var dataRange = worksheet.Range($"A{headerRow}:Q{headerRow + Clients.Count}");
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+        }
+
+        private void CreateStatsSheet(IXLWorksheet worksheet)
+        {
+            // Titre
+            worksheet.Cell(1, 1).Value = "STATISTIQUES DES CLIENTS";
+            worksheet.Range("A1:D1").Merge().Style.Font.Bold = true;
+            worksheet.Range("A1:D1").Style.Font.SetFontSize(16);
+            worksheet.Range("A1:D1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Range("A1:D1").Style.Fill.BackgroundColor = XLColor.Green;
+            worksheet.Range("A1:D1").Style.Font.FontColor = XLColor.White;
+
+            int currentRow = 3;
+
+            // Statistiques générales
+            worksheet.Cell(currentRow, 1).Value = "STATISTIQUES GÉNÉRALES";
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Font.Bold = true;
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Fill.BackgroundColor = XLColor.LightBlue;
+            currentRow += 2;
+
+            worksheet.Cell(currentRow, 1).Value = "Nombre total de clients :";
+            worksheet.Cell(currentRow, 2).Value = Clients.Count;
+            currentRow++;
+
+            // Répartition par ville
+            var villesStats = Clients.GroupBy(c => c.Ville ?? "Non spécifiée")
+                                    .OrderByDescending(g => g.Count())
+                                    .Take(10);
+
+            currentRow += 2;
+            worksheet.Cell(currentRow, 1).Value = "RÉPARTITION PAR VILLE (Top 10)";
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Font.Bold = true;
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Fill.BackgroundColor = XLColor.LightBlue;
+            currentRow++;
+
+            worksheet.Cell(currentRow, 1).Value = "Ville";
+            worksheet.Cell(currentRow, 2).Value = "Nombre de clients";
+            worksheet.Range($"A{currentRow}:B{currentRow}").Style.Font.Bold = true;
+            currentRow++;
+
+            foreach (var ville in villesStats)
             {
-                MessageBox.Show($"Erreur inattendue: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                worksheet.Cell(currentRow, 1).Value = ville.Key;
+                worksheet.Cell(currentRow, 2).Value = ville.Count();
+                currentRow++;
             }
-            finally
+
+            // Répartition par pays
+            var paysStats = Clients.GroupBy(c => c.Pays ?? "Non spécifié")
+                                  .OrderByDescending(g => g.Count());
+
+            currentRow += 2;
+            worksheet.Cell(currentRow, 1).Value = "RÉPARTITION PAR PAYS";
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Font.Bold = true;
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Fill.BackgroundColor = XLColor.LightBlue;
+            currentRow++;
+
+            worksheet.Cell(currentRow, 1).Value = "Pays";
+            worksheet.Cell(currentRow, 2).Value = "Nombre de clients";
+            worksheet.Range($"A{currentRow}:B{currentRow}").Style.Font.Bold = true;
+            currentRow++;
+
+            foreach (var pays in paysStats)
             {
-                if (connection.State == ConnectionState.Open)
-                    connection.Close();
+                worksheet.Cell(currentRow, 1).Value = pays.Key;
+                worksheet.Cell(currentRow, 2).Value = pays.Count();
+                currentRow++;
             }
-        }
-        private void ClearSelection()
-        {
 
-            ClearAllFields();
-            selectedClient = null;
-        }
-        private Client GetClientById(int clientId)
-        {
-            return clients.FirstOrDefault(c => c.ClientId == clientId);
-        }
+            // Répartition par type de société
+            var typesStats = Clients.GroupBy(c => c.TypeSociete ?? "Non spécifié")
+                                   .OrderByDescending(g => g.Count());
 
-        private void listView_Click(object sender, EventArgs e)
-        {
-            ClientID_TextBox.ReadOnly = true;
-            if (listView.SelectedItems.Count > 0)
+            currentRow += 2;
+            worksheet.Cell(currentRow, 1).Value = "RÉPARTITION PAR TYPE DE SOCIÉTÉ";
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Font.Bold = true;
+            worksheet.Range($"A{currentRow}:D{currentRow}").Style.Fill.BackgroundColor = XLColor.LightBlue;
+            currentRow++;
+
+            worksheet.Cell(currentRow, 1).Value = "Type de Société";
+            worksheet.Cell(currentRow, 2).Value = "Nombre de clients";
+            worksheet.Range($"A{currentRow}:B{currentRow}").Style.Font.Bold = true;
+            currentRow++;
+
+            foreach (var type in typesStats)
             {
-                ListViewItem selectedItem = listView.SelectedItems[0];
-                int clientIndex = (int)selectedItem.Tag;
-
-                selectedClient = clients[clientIndex];
-
-                // Populate all fields with client data
-                PopulateFieldsWithClientData(selectedClient);
+                worksheet.Cell(currentRow, 1).Value = type.Key;
+                worksheet.Cell(currentRow, 2).Value = type.Count();
+                currentRow++;
             }
-        }
-        private void PopulateFieldsWithClientData(Client client)
-        {
-            ClientID_TextBox.Text = client.ClientId.ToString();
-            NomR_TextBox.Text = client.NomResp;
-            TypeS_TextBox.Text = client.TypeSociete;
-            Nom_TextBox.Text = client.Nom;
-            Prenom_TextBox.Text = client.Prenom;
-            Tel_TextBox.Text = client.Tel;
-            Portable_TextBox.Text = client.Portable;
-            Fax_TextBox.Text = client.Fax;
-            RS_TextBox.Text = client.RS;
-            Email_TextBox.Text = client.Email;
-            Adress_TextBox.Text = client.Adresse;
-            Ville_ComboBox.Text = client.Ville;
-            Patente_TextBox.Text = client.Patente;
-            ICE_TextBox.Text = client.ICE;
-            RegistreC_TextBox.Text = client.RC;
-            IF_TextBox.Text = client.IF;
-            Pays_TextBox.Text = client.Pays;
+
+            // Ajuster les colonnes
+            worksheet.ColumnsUsed().AdjustToContents();
         }
 
-        private void Vider_Tile_Click(object sender, EventArgs e)
-        {
-            ClearAllFields();
-            ClientID_TextBox.ReadOnly = false;
-        }
+
     }
 }

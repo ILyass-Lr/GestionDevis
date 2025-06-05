@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BaseClient
 {
-     public class Client
+    public class Client
     {
         public int ClientId { get; set; }
         public string NomResp { get; set; }
@@ -55,21 +55,22 @@ namespace BaseClient
                       string ifValue, string pays)
         {
             ClientId = clientId;
-            NomResp = nomResp != null ? nomResp : string.Empty;
-            TypeSociete = typeSociete  != null ? typeSociete : string.Empty;
-            Nom = nom  != null ? nom : string.Empty;
-            Prenom = prenom  != null ? prenom : string.Empty;
-            Tel = tel  != null ? tel : string.Empty;
-            Portable = portable  != null ? portable : string.Empty;
-            Fax = fax  != null ? fax : string.Empty;
-            RS = rs  != null ? rs : string.Empty;
-            Email = email  != null ? email : string.Empty;
-            Adresse = adresse  != null ? adresse : string.Empty;
-            Ville = ville  != null ? ville : string.Empty;
-            Patente = patente  != null ? patente : string.Empty;
-            ICE = ice  != null ? ice : string.Empty;
-            RC = rc  != null ? rc : string.Empty;
-            IF = ifValue  != null ? ifValue : string.Empty;
-            Pays = pays  != null ? pays : string.Empty;
+            NomResp = nomResp ?? string.Empty;
+            TypeSociete = typeSociete ?? string.Empty;
+            Nom = nom ?? string.Empty;
+            Prenom = prenom ?? string.Empty;
+            Tel = tel ?? string.Empty;
+            Portable = portable ?? string.Empty;
+            Fax = fax ?? string.Empty;
+            RS = rs ?? string.Empty;
+            Email = email ?? string.Empty;
+            Adresse = adresse ?? string.Empty;
+            Ville = ville ?? string.Empty;
+            Patente = patente ?? string.Empty;
+            ICE = ice ?? string.Empty;
+            RC = rc ?? string.Empty;
+            IF = ifValue ?? string.Empty;
+            Pays = pays ?? string.Empty;
         }
-    }}
+    }
+}

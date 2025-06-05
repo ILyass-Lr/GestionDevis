@@ -34,6 +34,14 @@
             this.Design_TextBox = new MetroFramework.Controls.MetroTextBox();
             this.Ref_TextBox = new MetroFramework.Controls.MetroTextBox();
             this.Devis_ListView = new System.Windows.Forms.ListView();
+            this.Status = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.DevisNumber = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.RS = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Quantite = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.MontantDHT = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.MontantDTVA = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TotalDTTC = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Date = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.rs_Label = new MetroFramework.Controls.MetroLabel();
             this.RS_ComboBox = new MetroFramework.Controls.MetroComboBox();
             this.if_Label = new MetroFramework.Controls.MetroLabel();
@@ -47,7 +55,6 @@
             this.status_Label = new MetroFramework.Controls.MetroLabel();
             this.Status_ComboBox = new MetroFramework.Controls.MetroComboBox();
             this.dateDevis_Label = new MetroFramework.Controls.MetroLabel();
-            this.DateDevis_ComboBox = new MetroFramework.Controls.MetroComboBox();
             this.AjouterP_Tile = new MetroFramework.Controls.MetroTile();
             this.Supprimer_Tile = new MetroFramework.Controls.MetroTile();
             this.NouveauC_Tile = new MetroFramework.Controls.MetroTile();
@@ -72,7 +79,7 @@
             this.Client_ComboBox = new MetroFramework.Controls.MetroComboBox();
             this.tva_GroupBox = new System.Windows.Forms.GroupBox();
             this.tva20_RadioButton = new MetroFramework.Controls.MetroRadioButton();
-            this.tva7_RadioBox = new MetroFramework.Controls.MetroRadioButton();
+            this.tva7_RadioButton = new MetroFramework.Controls.MetroRadioButton();
             this.export_groupBox = new System.Windows.Forms.GroupBox();
             this.Imprimer_Button = new System.Windows.Forms.Button();
             this.Exporter_Tile = new MetroFramework.Controls.MetroTile();
@@ -83,6 +90,7 @@
             this.prix_Label = new MetroFramework.Controls.MetroLabel();
             this.error_Label = new System.Windows.Forms.Label();
             this.groupBox = new System.Windows.Forms.GroupBox();
+            this.datePicker = new System.Windows.Forms.DateTimePicker();
             this.Qtt_TextBox = new MetroFramework.Controls.MetroTextBox();
             this.Prix_TextBox = new MetroFramework.Controls.MetroTextBox();
             this.filtrer_Label = new MetroFramework.Controls.MetroLabel();
@@ -116,6 +124,7 @@
             // 
             // Design_TextBox
             // 
+            this.Design_TextBox.CausesValidation = false;
             this.Design_TextBox.CustomBackground = true;
             this.Design_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.Design_TextBox.Location = new System.Drawing.Point(386, 71);
@@ -137,12 +146,66 @@
             // 
             // Devis_ListView
             // 
+            this.Devis_ListView.BackColor = System.Drawing.Color.White;
+            this.Devis_ListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Status,
+            this.DevisNumber,
+            this.RS,
+            this.Quantite,
+            this.MontantDHT,
+            this.MontantDTVA,
+            this.TotalDTTC,
+            this.Date});
+            this.Devis_ListView.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.Devis_ListView.FullRowSelect = true;
             this.Devis_ListView.HideSelection = false;
             this.Devis_ListView.Location = new System.Drawing.Point(23, 309);
+            this.Devis_ListView.MultiSelect = false;
             this.Devis_ListView.Name = "Devis_ListView";
+            this.Devis_ListView.OwnerDraw = true;
             this.Devis_ListView.Size = new System.Drawing.Size(574, 130);
             this.Devis_ListView.TabIndex = 8;
             this.Devis_ListView.UseCompatibleStateImageBehavior = false;
+            this.Devis_ListView.View = System.Windows.Forms.View.Details;
+            this.Devis_ListView.SelectedIndexChanged += new System.EventHandler(this.Devis_ListView_SelectedIndexChanged);
+            // 
+            // Status
+            // 
+            this.Status.Text = "Status";
+            // 
+            // DevisNumber
+            // 
+            this.DevisNumber.Text = "Devis Number";
+            this.DevisNumber.Width = 80;
+            // 
+            // RS
+            // 
+            this.RS.Text = "RS";
+            // 
+            // Quantite
+            // 
+            this.Quantite.Text = "Quantité";
+            this.Quantite.Width = 75;
+            // 
+            // MontantDHT
+            // 
+            this.MontantDHT.Text = "Montant HT";
+            this.MontantDHT.Width = 75;
+            // 
+            // MontantDTVA
+            // 
+            this.MontantDTVA.Text = "Montant TVA";
+            this.MontantDTVA.Width = 75;
+            // 
+            // TotalDTTC
+            // 
+            this.TotalDTTC.Text = "Total TTC";
+            this.TotalDTTC.Width = 70;
+            // 
+            // Date
+            // 
+            this.Date.Text = "Date";
+            this.Date.Width = 75;
             // 
             // rs_Label
             // 
@@ -161,7 +224,7 @@
             this.RS_ComboBox.ItemHeight = 23;
             this.RS_ComboBox.Location = new System.Drawing.Point(109, 102);
             this.RS_ComboBox.Name = "RS_ComboBox";
-            this.RS_ComboBox.Size = new System.Drawing.Size(140, 29);
+            this.RS_ComboBox.Size = new System.Drawing.Size(150, 29);
             this.RS_ComboBox.TabIndex = 12;
             this.RS_ComboBox.SelectedIndexChanged += new System.EventHandler(this.RS_ComboBox_SelectedIndexChanged);
             // 
@@ -183,7 +246,7 @@
             this.IF_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.IF_TextBox.Location = new System.Drawing.Point(109, 176);
             this.IF_TextBox.Name = "IF_TextBox";
-            this.IF_TextBox.Size = new System.Drawing.Size(140, 23);
+            this.IF_TextBox.Size = new System.Drawing.Size(150, 23);
             this.IF_TextBox.TabIndex = 14;
             // 
             // ice_Label
@@ -215,7 +278,7 @@
             this.ICE_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.ICE_TextBox.Location = new System.Drawing.Point(109, 209);
             this.ICE_TextBox.Name = "ICE_TextBox";
-            this.ICE_TextBox.Size = new System.Drawing.Size(140, 23);
+            this.ICE_TextBox.Size = new System.Drawing.Size(150, 23);
             this.ICE_TextBox.TabIndex = 17;
             // 
             // Id_TextBox
@@ -225,7 +288,7 @@
             this.Id_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.Id_TextBox.Location = new System.Drawing.Point(109, 242);
             this.Id_TextBox.Name = "Id_TextBox";
-            this.Id_TextBox.Size = new System.Drawing.Size(140, 23);
+            this.Id_TextBox.Size = new System.Drawing.Size(150, 23);
             this.Id_TextBox.TabIndex = 18;
             // 
             // devis_Label
@@ -246,7 +309,7 @@
             this.Devis_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.Devis_TextBox.Location = new System.Drawing.Point(109, 34);
             this.Devis_TextBox.Name = "Devis_TextBox";
-            this.Devis_TextBox.Size = new System.Drawing.Size(140, 23);
+            this.Devis_TextBox.Size = new System.Drawing.Size(150, 23);
             this.Devis_TextBox.TabIndex = 20;
             // 
             // status_Label
@@ -264,9 +327,13 @@
             // 
             this.Status_ComboBox.FormattingEnabled = true;
             this.Status_ComboBox.ItemHeight = 23;
+            this.Status_ComboBox.Items.AddRange(new object[] {
+            "Accepté",
+            "En Attente",
+            "Refusée"});
             this.Status_ComboBox.Location = new System.Drawing.Point(109, 65);
             this.Status_ComboBox.Name = "Status_ComboBox";
-            this.Status_ComboBox.Size = new System.Drawing.Size(140, 29);
+            this.Status_ComboBox.Size = new System.Drawing.Size(150, 29);
             this.Status_ComboBox.TabIndex = 22;
             // 
             // dateDevis_Label
@@ -279,15 +346,6 @@
             this.dateDevis_Label.Size = new System.Drawing.Size(95, 19);
             this.dateDevis_Label.TabIndex = 23;
             this.dateDevis_Label.Text = "Date de devis :";
-            // 
-            // DateDevis_ComboBox
-            // 
-            this.DateDevis_ComboBox.FormattingEnabled = true;
-            this.DateDevis_ComboBox.ItemHeight = 23;
-            this.DateDevis_ComboBox.Location = new System.Drawing.Point(386, 36);
-            this.DateDevis_ComboBox.Name = "DateDevis_ComboBox";
-            this.DateDevis_ComboBox.Size = new System.Drawing.Size(140, 29);
-            this.DateDevis_ComboBox.TabIndex = 24;
             // 
             // AjouterP_Tile
             // 
@@ -302,6 +360,7 @@
             this.AjouterP_Tile.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.AjouterP_Tile.TileImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.AjouterP_Tile.TileTextFontWeight = MetroFramework.MetroTileTextWeight.Bold;
+            this.AjouterP_Tile.Click += new System.EventHandler(this.Ajouter_Tile_Click);
             // 
             // Supprimer_Tile
             // 
@@ -355,7 +414,7 @@
             // 
             // Produit_ListView
             // 
-            this.Produit_ListView.BackColor = System.Drawing.SystemColors.ScrollBar;
+            this.Produit_ListView.BackColor = System.Drawing.Color.White;
             this.Produit_ListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.DevisNbr,
             this.Designation,
@@ -366,36 +425,37 @@
             this.TotalTTC,
             this.Reference});
             this.Produit_ListView.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Produit_ListView.ForeColor = System.Drawing.SystemColors.Window;
+            this.Produit_ListView.ForeColor = System.Drawing.SystemColors.WindowFrame;
             this.Produit_ListView.FullRowSelect = true;
             this.Produit_ListView.HideSelection = false;
             this.Produit_ListView.Location = new System.Drawing.Point(23, 469);
+            this.Produit_ListView.MultiSelect = false;
             this.Produit_ListView.Name = "Produit_ListView";
             this.Produit_ListView.OwnerDraw = true;
             this.Produit_ListView.Size = new System.Drawing.Size(574, 130);
             this.Produit_ListView.TabIndex = 31;
             this.Produit_ListView.UseCompatibleStateImageBehavior = false;
             this.Produit_ListView.View = System.Windows.Forms.View.Details;
+            this.Produit_ListView.SelectedIndexChanged += new System.EventHandler(this.Produit_ListView_SelectedIndexChanged);
             // 
             // DevisNbr
             // 
             this.DevisNbr.Text = "DevisNbr";
-            this.DevisNbr.Width = 65;
+            this.DevisNbr.Width = 70;
             // 
             // Designation
             // 
             this.Designation.Text = "Designation";
-            this.Designation.Width = 80;
+            this.Designation.Width = 74;
             // 
             // Prix
             // 
             this.Prix.Text = "Prix";
-            this.Prix.Width = 50;
             // 
             // Quantité
             // 
             this.Quantité.Text = "Quantité";
-            this.Quantité.Width = 70;
+            this.Quantité.Width = 62;
             // 
             // MontantHT
             // 
@@ -405,7 +465,7 @@
             // MontantTVA
             // 
             this.MontantTVA.Text = "Montant TVA";
-            this.MontantTVA.Width = 83;
+            this.MontantTVA.Width = 82;
             // 
             // TotalTTC
             // 
@@ -415,7 +475,7 @@
             // Reference
             // 
             this.Reference.Text = "Reference";
-            this.Reference.Width = 70;
+            this.Reference.Width = 69;
             // 
             // montant_Label
             // 
@@ -430,18 +490,22 @@
             // Montant_TextBox
             // 
             this.Montant_TextBox.CustomBackground = true;
+            this.Montant_TextBox.Enabled = false;
             this.Montant_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.Montant_TextBox.Location = new System.Drawing.Point(620, 481);
             this.Montant_TextBox.Name = "Montant_TextBox";
+            this.Montant_TextBox.ReadOnly = true;
             this.Montant_TextBox.Size = new System.Drawing.Size(140, 23);
             this.Montant_TextBox.TabIndex = 34;
             // 
             // TVA_TextBox
             // 
             this.TVA_TextBox.CustomBackground = true;
+            this.TVA_TextBox.Enabled = false;
             this.TVA_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.TVA_TextBox.Location = new System.Drawing.Point(620, 529);
             this.TVA_TextBox.Name = "TVA_TextBox";
+            this.TVA_TextBox.ReadOnly = true;
             this.TVA_TextBox.Size = new System.Drawing.Size(140, 23);
             this.TVA_TextBox.TabIndex = 36;
             // 
@@ -458,9 +522,11 @@
             // Total_TextBox
             // 
             this.Total_TextBox.CustomBackground = true;
+            this.Total_TextBox.Enabled = false;
             this.Total_TextBox.FontSize = MetroFramework.MetroTextBoxSize.Medium;
             this.Total_TextBox.Location = new System.Drawing.Point(620, 577);
             this.Total_TextBox.Name = "Total_TextBox";
+            this.Total_TextBox.ReadOnly = true;
             this.Total_TextBox.Size = new System.Drawing.Size(140, 23);
             this.Total_TextBox.TabIndex = 38;
             // 
@@ -491,7 +557,7 @@
             this.Client_ComboBox.ItemHeight = 23;
             this.Client_ComboBox.Location = new System.Drawing.Point(109, 138);
             this.Client_ComboBox.Name = "Client_ComboBox";
-            this.Client_ComboBox.Size = new System.Drawing.Size(140, 29);
+            this.Client_ComboBox.Size = new System.Drawing.Size(150, 29);
             this.Client_ComboBox.TabIndex = 43;
             this.Client_ComboBox.SelectedIndexChanged += new System.EventHandler(this.Client_ComboBox_SelectedIndexChanged);
             // 
@@ -499,7 +565,7 @@
             // 
             this.tva_GroupBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
             this.tva_GroupBox.Controls.Add(this.tva20_RadioButton);
-            this.tva_GroupBox.Controls.Add(this.tva7_RadioBox);
+            this.tva_GroupBox.Controls.Add(this.tva7_RadioButton);
             this.tva_GroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tva_GroupBox.Location = new System.Drawing.Point(548, 81);
             this.tva_GroupBox.Name = "tva_GroupBox";
@@ -522,19 +588,20 @@
             this.tva20_RadioButton.Text = "20%";
             this.tva20_RadioButton.UseVisualStyleBackColor = true;
             // 
-            // tva7_RadioBox
+            // tva7_RadioButton
             // 
-            this.tva7_RadioBox.AutoSize = true;
-            this.tva7_RadioBox.CustomBackground = true;
-            this.tva7_RadioBox.CustomForeColor = true;
-            this.tva7_RadioBox.FontSize = MetroFramework.MetroLinkSize.Medium;
-            this.tva7_RadioBox.Location = new System.Drawing.Point(30, 30);
-            this.tva7_RadioBox.Name = "tva7_RadioBox";
-            this.tva7_RadioBox.Size = new System.Drawing.Size(44, 19);
-            this.tva7_RadioBox.TabIndex = 45;
-            this.tva7_RadioBox.TabStop = true;
-            this.tva7_RadioBox.Text = "7%";
-            this.tva7_RadioBox.UseVisualStyleBackColor = true;
+            this.tva7_RadioButton.AutoSize = true;
+            this.tva7_RadioButton.Checked = true;
+            this.tva7_RadioButton.CustomBackground = true;
+            this.tva7_RadioButton.CustomForeColor = true;
+            this.tva7_RadioButton.FontSize = MetroFramework.MetroLinkSize.Medium;
+            this.tva7_RadioButton.Location = new System.Drawing.Point(30, 30);
+            this.tva7_RadioButton.Name = "tva7_RadioButton";
+            this.tva7_RadioButton.Size = new System.Drawing.Size(44, 19);
+            this.tva7_RadioButton.TabIndex = 45;
+            this.tva7_RadioButton.TabStop = true;
+            this.tva7_RadioButton.Text = "7%";
+            this.tva7_RadioButton.UseVisualStyleBackColor = true;
             // 
             // export_groupBox
             // 
@@ -563,6 +630,7 @@
             this.Imprimer_Button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Imprimer_Button.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
             this.Imprimer_Button.UseVisualStyleBackColor = false;
+            this.Imprimer_Button.Click += new System.EventHandler(this.Imprimer_Button_Click);
             // 
             // Exporter_Tile
             // 
@@ -578,6 +646,7 @@
             this.Exporter_Tile.TileImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.Exporter_Tile.TileTextFontSize = MetroFramework.MetroTileTextSize.Small;
             this.Exporter_Tile.TileTextFontWeight = MetroFramework.MetroTileTextWeight.Bold;
+            this.Exporter_Tile.Click += new System.EventHandler(this.Exporter_Tile_Click);
             // 
             // Facture_Button
             // 
@@ -597,6 +666,7 @@
             this.Facture_Button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Facture_Button.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
             this.Facture_Button.UseVisualStyleBackColor = false;
+            this.Facture_Button.Click += new System.EventHandler(this.Facture_Button_Click);
             // 
             // Enregistrer_Button
             // 
@@ -617,6 +687,7 @@
             this.Enregistrer_Button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Enregistrer_Button.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
             this.Enregistrer_Button.UseVisualStyleBackColor = false;
+            this.Enregistrer_Button.Click += new System.EventHandler(this.Enregistrer_Button_Click);
             // 
             // NouveauD_Button
             // 
@@ -636,6 +707,7 @@
             this.NouveauD_Button.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.NouveauD_Button.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
             this.NouveauD_Button.UseVisualStyleBackColor = false;
+            this.NouveauD_Button.Click += new System.EventHandler(this.NouveauD_Button_Click);
             // 
             // qtt_Label
             // 
@@ -672,6 +744,7 @@
             // groupBox
             // 
             this.groupBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.groupBox.Controls.Add(this.datePicker);
             this.groupBox.Controls.Add(this.Qtt_TextBox);
             this.groupBox.Controls.Add(this.Prix_TextBox);
             this.groupBox.Controls.Add(this.error_Label);
@@ -682,6 +755,17 @@
             this.groupBox.Size = new System.Drawing.Size(774, 260);
             this.groupBox.TabIndex = 46;
             this.groupBox.TabStop = false;
+            // 
+            // datePicker
+            // 
+            this.datePicker.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.datePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.datePicker.Location = new System.Drawing.Point(370, 19);
+            this.datePicker.MinDate = new System.DateTime(2024, 1, 1, 0, 0, 0, 0);
+            this.datePicker.Name = "datePicker";
+            this.datePicker.Size = new System.Drawing.Size(140, 22);
+            this.datePicker.TabIndex = 49;
+            this.datePicker.Value = new System.DateTime(2025, 6, 1, 0, 0, 0, 0);
             // 
             // Qtt_TextBox
             // 
@@ -725,6 +809,8 @@
             this.Filtrer_TextBox.Name = "Filtrer_TextBox";
             this.Filtrer_TextBox.Size = new System.Drawing.Size(75, 23);
             this.Filtrer_TextBox.TabIndex = 48;
+            this.Filtrer_TextBox.TextChanged += new System.EventHandler(this.Filtrer_TextBox_TextChanged);
+            this.Filtrer_TextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Filtrer_TextBox_KeyPress);
             // 
             // GestionDevis
             // 
@@ -752,7 +838,6 @@
             this.Controls.Add(this.NouveauC_Tile);
             this.Controls.Add(this.Supprimer_Tile);
             this.Controls.Add(this.AjouterP_Tile);
-            this.Controls.Add(this.DateDevis_ComboBox);
             this.Controls.Add(this.dateDevis_Label);
             this.Controls.Add(this.Status_ComboBox);
             this.Controls.Add(this.status_Label);
@@ -772,7 +857,11 @@
             this.Controls.Add(this.ref_Label);
             this.Controls.Add(this.design_Label);
             this.Controls.Add(this.groupBox);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.HelpButton = true;
             this.Name = "GestionDevis";
+            this.ShowIcon = false;
+            this.Text = "Gestion de Devis";
             this.Load += new System.EventHandler(this.Facture_Load);
             this.tva_GroupBox.ResumeLayout(false);
             this.tva_GroupBox.PerformLayout();
@@ -805,7 +894,6 @@
         private MetroFramework.Controls.MetroLabel status_Label;
         private MetroFramework.Controls.MetroComboBox Status_ComboBox;
         private MetroFramework.Controls.MetroLabel dateDevis_Label;
-        private MetroFramework.Controls.MetroComboBox DateDevis_ComboBox;
         private MetroFramework.Controls.MetroTile AjouterP_Tile;
         private MetroFramework.Controls.MetroTile Supprimer_Tile;
         private MetroFramework.Controls.MetroTile NouveauC_Tile;
@@ -819,7 +907,6 @@
         private MetroFramework.Controls.MetroTextBox Total_TextBox;
         private MetroFramework.Controls.MetroLabel total_Label;
         private System.Windows.Forms.ColumnHeader DevisNbr;
-        private System.Windows.Forms.ColumnHeader Designation;
         private System.Windows.Forms.ColumnHeader Quantité;
         private System.Windows.Forms.ColumnHeader Prix;
         private System.Windows.Forms.ColumnHeader TotalTTC;
@@ -831,7 +918,7 @@
         private MetroFramework.Controls.MetroComboBox Client_ComboBox;
         private System.Windows.Forms.GroupBox tva_GroupBox;
         private MetroFramework.Controls.MetroRadioButton tva20_RadioButton;
-        private MetroFramework.Controls.MetroRadioButton tva7_RadioBox;
+        private MetroFramework.Controls.MetroRadioButton tva7_RadioButton;
         private System.Windows.Forms.GroupBox export_groupBox;
         private System.Windows.Forms.Button Imprimer_Button;
         private MetroFramework.Controls.MetroTile Exporter_Tile;
@@ -845,6 +932,16 @@
         private MetroFramework.Controls.MetroTextBox Prix_TextBox;
         private MetroFramework.Controls.MetroLabel filtrer_Label;
         private MetroFramework.Controls.MetroTextBox Filtrer_TextBox;
+        private System.Windows.Forms.DateTimePicker datePicker;
+        private System.Windows.Forms.ColumnHeader Status;
+        private System.Windows.Forms.ColumnHeader DevisNumber;
+        private System.Windows.Forms.ColumnHeader RS;
+        private System.Windows.Forms.ColumnHeader Quantite;
+        private System.Windows.Forms.ColumnHeader MontantDHT;
+        private System.Windows.Forms.ColumnHeader MontantDTVA;
+        private System.Windows.Forms.ColumnHeader TotalDTTC;
+        private System.Windows.Forms.ColumnHeader Date;
+        public System.Windows.Forms.ColumnHeader Designation;
     }
 }
 

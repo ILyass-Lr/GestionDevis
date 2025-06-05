@@ -40,7 +40,8 @@ namespace GestionClientFactures
             RS = rs;
             Number = number;
         }
-      
+        public Devis() { }
+
 
     }
 }
